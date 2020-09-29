@@ -1,0 +1,28 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+#  data:
+#    rest:
+#      base-path: /api
+#    jpa:
+#      repositories:
+#        bootstrap-mode: deferred
+  autoconfigure:
+    exclude:
+    - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+#  jpa:
+#    open-in-view: false
+        
+            
+logging:
+  file:
+    path: logs
+  
+keycloak:
+  enabled: true
+  realm: demo
+  bearer-only: false
+  resource: application
+  public-client: false
+  use-resource-role-mappings: true
+  principal-attribute: preferred_username
