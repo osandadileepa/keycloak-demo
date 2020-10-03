@@ -18,6 +18,9 @@ public class Credential implements Serializable {
 
 	private static final long serialVersionUID = -5187612442269650013L;
 
+	private String username;
+
 	private String email;
+
 	private String password;
 }

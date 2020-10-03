@@ -20,13 +20,11 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.osanda.work.keycloakDemo.core.keycloak.dto.UserCreationDto;
 import com.osanda.work.keycloakDemo.core.keycloak.dto.UserInfo;
+import com.osanda.work.keycloakDemo.core.keycloak.dto.UserUpdateDto;
 import com.osanda.work.keycloakDemo.core.keycloak.exceptions.UserAlreadyExistsException;
 import com.osanda.work.keycloakDemo.core.keycloak.exceptions.UserCreationFailedException;
 import com.osanda.work.keycloakDemo.core.keycloak.exceptions.UserDeletionFailedException;
@@ -38,7 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 /***
  * operation to get user details and do modifications
  * 
- * @author Randika Hapugoda
  * @author Osanda Wedamulla
  */
 @Slf4j
@@ -62,13 +59,11 @@ public class KeycloakAdminService {
 	@Value("${keycloak.credentials.secret}")
 	private String clientSecret;
 
-	@Value("${extendz..keycloak.admin}")
+	@Value("${credentials..keycloak.admin}")
 	private String adminUsername;
 
-	@Value("${extendz.keycloak.password}")
+	@Value("${credentials.keycloak.password}")
 	private String adminPassword;
-
-	//private final UserRepository userRepository;
 
 	private Keycloak getKeyCloak() {
 		return KeycloakBuilder.builder().serverUrl(authServerUrl).realm("master").username(adminUsername)
@@ -103,31 +98,6 @@ public class KeycloakAdminService {
 			return id;
 	} // deleteUser()
 
-//	public Optional<User> createUser(UserRegisterDto userRegisterDto)
-//			throws UserAlreadyExistsException, UserCreationFailedException {
-//		UsersResource userRessource = getKeycloakUserResource();
-//		UserRepresentation userRep = userRegisterDto.of();
-//		User user = new User();
-//
-//		Response result = userRessource.create(userRep);
-//		int statusId = result.getStatus();
-//		// Created status
-//		if (statusId == 201) {
-//			log.info("Account created for {} ", userRegisterDto.getEmail());
-//			String userId = result.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
-//			// Update user
-//			user.setId(userId);
-//			user.setEmail(userRegisterDto.getEmail());
-//			this.userRepository.save(user);
-//			log.info("User {} saved in local database.", user.getEmail());
-//			return Optional.of(user);
-//		} else if (statusId == 409) {
-//			throw new UserAlreadyExistsException();
-//		} else {
-//			throw new UserCreationFailedException();
-//		}
-//	} // exchangeCredential()
-
 	public UserInfo getUserByUserName(String userName) {
 		UsersResource userRessource = getKeycloakUserResource();
 		List<UserRepresentation> search = userRessource.search(userName);
@@ -143,7 +113,7 @@ public class KeycloakAdminService {
 	 * @param pageable
 	 * @return
 	 */
-	public Page<UserInfo> getUsers(String userName, Pageable pageable) {
+	public List<UserInfo> getUsers(String userName) {
 
 		UsersResource userRessource = getKeycloakUserResource();
 
@@ -161,22 +131,12 @@ public class KeycloakAdminService {
 					.collect(Collectors.toList());
 		}
 
-		int end = (pageable.getPageNumber() + 1) * pageable.getPageSize();
+		return userInfos;
 
-		if (end > userInfos.size())
-			end = userInfos.size();
-
-		int start = pageable.getPageNumber() * pageable.getPageSize();
-
-		if (start > userInfos.size())
-			start = userInfos.size() - 1;
-
-		return new PageImpl<UserInfo>(userInfos.subList(start, end), pageable, userInfos.size());
 	}// getUsers()
 
 	/**
 	 * 
-	 * @author Randika Hapugoda
 	 * @author Osanda Wedamulla
 	 * 
 	 * @param UserCreationDto userInfo
@@ -211,9 +171,6 @@ public class KeycloakAdminService {
 
 			userInfo.setSub(userId);
 
-			if (userInfo != null)
-				this.createLocalUser(userInfo);
-
 			return new UserInfo(userInfo);
 
 		} else if (statusId == 409) {
@@ -222,37 +179,6 @@ public class KeycloakAdminService {
 			throw new UserCreationFailedException();
 		}
 	}// createUser()
-
-	/***
-	 * create local user when new user creating on keycloak
-	 * 
-	 * @author Osanda Wedamulla
-	 * 
-	 * @param userInfo
-	 */
-	private void createLocalUser(UserCreationDto userInfo) {
-
-//		User user = this.userRepository.findByUserName(userInfo.getUserName());
-//
-//		if (user == null) {
-//
-//			user = new User();
-//			user.setId(userInfo.getSub());
-//			user.setActive(true);
-//			user.setUserName(userInfo.getUserName());
-//			user.setFirstName(userInfo.getFirstName());
-//			user.setLastName(userInfo.getLastName());
-//			user.setEmail(userInfo.getEmail());
-//
-//			try {
-//				this.userRepository.save(user);
-//				log.info("New user created Locally : " + user.getUserName());
-//			} catch (Exception e) {
-//				log.error("Error saving user ", e);
-//			}
-//		}
-
-	}// createLocalUser()
 
 	private RoleRepresentation getRoleRepresentaionByRole(String role) {
 		return this.getRealmResource().clients().get(getClientByName().getId()).roles().get(role).toRepresentation();
@@ -320,16 +246,17 @@ public class KeycloakAdminService {
 
 		List<String> avialableRoles = userResource.get(userId).roles().clientLevel(getClientByName().getId()).listAll()
 				.stream().map(r -> r.getName()).collect(Collectors.toList());
-		
+
 		List<String> removeRoles = new ArrayList<>();
 
 		avialableRoles.forEach(r -> {
-			if(!roles.contains(r)) 
+			if (!roles.contains(r))
 				removeRoles.add(r);
 		});
-		
-		if(removeRoles.size() > 0) {
-			List<RoleRepresentation> removeList = removeRoles.stream().map(r -> this.getRoleRepresentaionByRole(r)).collect(Collectors.toList());
+
+		if (removeRoles.size() > 0) {
+			List<RoleRepresentation> removeList = removeRoles.stream().map(r -> this.getRoleRepresentaionByRole(r))
+					.collect(Collectors.toList());
 			userResource.get(userId).roles().clientLevel(getClientByName().getId()).remove(removeList);
 			log.info("Removing roles " + removeRoles.toString());
 		}
@@ -356,31 +283,31 @@ public class KeycloakAdminService {
 		return new UserRepresentationDto().toUserInfo(userRepresentation);
 	}// putUser()
 
-//	/***
-//	 * @author Osanda Wedamulla
-//	 * 
-//	 * @param userDto
-//	 * @return
-//	 */
-//	public UserInfo updateUserDetails(UserDto userDto) {
-//
-//		String id = userDto.getId();
-//
-//		UserRepresentation user = new UserRepresentation();
-//		user.setFirstName(userDto.getFirstName());
-//		user.setLastName(userDto.getLastName());
-//		user.setEmail(userDto.getEmail());
-//		user.setEnabled(userDto.getActive());
-//
-//		if (userDto.getPassword() != null)
-//			this.resetPassword(id, userDto.getPassword());
-//
-//		if (userDto.getUpdatedRoles() != null && userDto.getUpdatedRoles().size() > 0)
-//			this.addRolesToUser(id, userDto.getUpdatedRoles());
-//
-//		return this.putUser(id, user);
-//
-//	}// updateUserDetails()
+	/***
+	 * @author Osanda Wedamulla
+	 * 
+	 * @param userDto
+	 * @return
+	 */
+	public UserInfo updateUserDetails(UserUpdateDto userDto) {
+
+		String id = userDto.getId();
+
+		UserRepresentation user = new UserRepresentation();
+		user.setFirstName(userDto.getFirstName());
+		user.setLastName(userDto.getLastName());
+		user.setEmail(userDto.getEmail());
+		user.setEnabled(userDto.getActive());
+
+		if (userDto.getPassword() != null)
+			this.resetPassword(id, userDto.getPassword());
+
+		if (userDto.getUpdatedRoles() != null && userDto.getUpdatedRoles().size() > 0)
+			this.addRolesToUser(id, userDto.getUpdatedRoles());
+
+		return this.putUser(id, user);
+
+	}// updateUserDetails()
 
 	/***
 	 * get avilable roles for a user

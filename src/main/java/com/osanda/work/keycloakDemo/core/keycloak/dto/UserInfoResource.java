@@ -1,13 +1,11 @@
 package com.osanda.work.keycloakDemo.core.keycloak.dto;
 
-import org.springframework.hateoas.Resources;
-
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class UserInfoResource extends Resources<UserInfo> {
+public class UserInfoResource {
 
 	private String sub;
 	private String preferred_username;

@@ -2,38 +2,11 @@
 server:
   port: 8080
   address: localhost
-# Spring 
+# Spring Configs
 spring:
-
-#  flyway:
-#    schemas:
-#    - metalsignals_flyway
-#  datasource:
-#    hikari:
-#      auto-commit: false
-#    url: jdbc:postgresql://localhost:5432/metalsignals
-#    username: rsm
-#    password: rsm31234
-#  jpa:
-#    properties:
-#      hibernate:
-#        hikari:  
-#          auto_commit: false
-#        default_schema: metalsignals_data
-#        show_sql: false
-#        dialect: org.hibernate.dialect.PostgreSQL95Dialect
-#        jdbc:
-#          lob:
-#            non_contextual_creation: true
-#        temp:
-#          use_jdbc_metadata_defaults: false
-#    hibernate:
-#      ddl-auto: validate  
-
   profiles:
     active:
     - dev
-    
 # Keycloak
 keycloak:
   auth-server-url: http://localhost:9090/auth
@@ -41,7 +14,7 @@ keycloak:
     secret: 3cef5b1b-c24c-4f1b-ae92-c6e604aa0a5e
   ssl-required: external
 #Extendz
-extendz:
+credentials:
   keycloak:
     admin: admin
     password: demo31234

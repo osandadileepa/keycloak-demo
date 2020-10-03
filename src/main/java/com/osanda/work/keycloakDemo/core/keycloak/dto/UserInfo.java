@@ -9,6 +9,8 @@ import org.keycloak.json.StringOrArraySerializer;
 import org.keycloak.representations.AddressClaimSet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -20,6 +22,7 @@ import lombok.ToString;
 @Data
 @ToString
 @NoArgsConstructor
+@JsonInclude(Include.NON_NULL)
 public class UserInfo implements Serializable {
 
 	private static final long serialVersionUID = 500218240486185505L;

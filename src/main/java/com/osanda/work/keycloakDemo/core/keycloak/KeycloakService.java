@@ -1,18 +1,13 @@
 package com.osanda.work.keycloakDemo.core.keycloak;
 
-import java.time.LocalDate;
 import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.keycloak.representations.AccessTokenResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -30,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 /***
  * communicate with keycloak server and get token and user releated information
  * 
- * @author Randika Hapugoda
  * @author Osanda Wedamulla
  */
 @Slf4j
@@ -50,25 +44,26 @@ public class KeycloakService {
 	@Value("${keycloak.auth-server-url}")
 	private String authServerUrl;
 
-//	private final LoginService loginService;
-//	private final UserRepository userRepository;
-
 	/***
 	 * initiate request data with embedded credentials
 	 * 
-	 * @author Randika Hapugoda
 	 * @author Osanda Wedamulla
 	 * 
 	 * @param credential
 	 * @return
 	 * @throws Exception
 	 */
-	public Optional<AccessTokenResponse> getTokenForCredential(Credential credential, HttpServletRequest request)
-			throws Exception {
-		log.info("Login initiated for {}", credential.getEmail());
+	public Optional<AccessTokenResponse> getTokenForCredential(Credential credential) throws Exception {
+
+		String userName = credential.getUsername();
+
+		if (userName == null)
+			userName = credential.getEmail();
+
+		log.info("Login initiated for {}", userName);
 
 		MultiValueMap<String, String> objectMap = new LinkedMultiValueMap<String, String>();
-		objectMap.add("username", credential.getEmail());
+		objectMap.add("username", userName);
 		objectMap.add("password", credential.getPassword());
 		objectMap.add("client_id", this.keyclockClientId);
 		objectMap.add("grant_type", "password");
@@ -79,74 +74,13 @@ public class KeycloakService {
 
 		Optional<AccessTokenResponse> token = this.exchange(objectMap);
 
-		if (token.isPresent()) {
-			
-			
-			UserInfo userInfo = this.getUserInformationFromToken(token.get());
-
-//			User user = this.userRepository.findByUserName(credential.getEmail());
-//
-//			if (user == null)
-//				user = this.userRepository.findByEmail(credential.getEmail());
-//
-//			if (user != null) {
-//
-//				if (user.getExpireDate() != null) {
-//					if (!user.getExpireDate().isAfter(LocalDate.now().minusDays(1)))
-//						throw new UserExpiredException();
-//				} else {
-//
-//					LocalDate expDate = LocalDate.now().plusDays(14);
-//					user.setExpireDate(expDate);
-//					log.info("Expire date set {} for user : {}", expDate, user.getUserName());
-//
-//					try {
-//						this.userRepository.save(user);
-//						log.info("User Updated : " + user.getUserName());
-//					} catch (DataIntegrityViolationException e) {
-//						log.error("Error updating user", e.getMessage());
-//					}
-//
-//				}
-//
-//			}
-//			// create local user if user not available localy
-//			else {
-//
-//				
-//
-//				user = new User();
-//
-//				user.setId(userInfo.getSub());
-//				user.setUserName(userInfo.getPreferredUsername());
-//				user.setEmail(userInfo.getEmail());
-//				user.setFirstName(userInfo.getGivenName());
-//				user.setLastName(userInfo.getFamilyName());
-//				user.setActive(true);
-//
-//				if (user != null && user.getExpireDate() == null) {
-//
-//					LocalDate expDate = LocalDate.now().plusDays(14);
-//					user.setExpireDate(expDate);
-//					log.info("Expire date set {} for user : {}", expDate, user.getUserName());
-//				}
-//
-//				try {
-//					this.userRepository.save(user);
-//					log.info("New user created : " + userInfo.getPreferredUsername());
-//				} catch (DataIntegrityViolationException e) {
-//					log.error("Error saving user", e.getMessage());
-//				}
-//
-//			}
-			
-			
-		} 
-		
-		// token availability
-		else {
-			throw new Exception();
-		}
+//		if (token.isPresent()) {
+//			UserInfo userInfo = this.getUserInformationFromToken(token.get());
+//		}
+//		// token availability
+//		else {
+//			throw new Exception();
+//		}
 
 		return token;
 	} // getTokenForCredential()
@@ -156,7 +90,6 @@ public class KeycloakService {
 	/***
 	 * get access token from keycloak server for valid credentials
 	 * 
-	 * @author Randika Hapugoda
 	 * @author Osanda Wedamulla
 	 * 
 	 * @param params
@@ -187,24 +120,6 @@ public class KeycloakService {
 			throw new UserNamePasswordIncorrectException();
 		}
 	} // exchange()
-
-//	/***
-//	 * get user profile from access token and authentication
-//	 * 
-//	 * @author Osanda Wedamulla
-//	 * 
-//	 * @param token
-//	 * @param authentication
-//	 * @return
-//	 * @throws Exception
-//	 */
-//	public UserDto getUserProfileFromTokenAndAuthentication(Authentication authentication) throws Exception {
-//
-//		User user = this.loginService.updateRolesWithKeycloakFromAuthentication(authentication);
-//
-//		return new UserDto(user);
-//
-//	}// getUserProfileFromTokenAndAuthentication()
 
 	/***
 	 * get available user information form keycloak
