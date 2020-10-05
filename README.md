@@ -36,7 +36,7 @@ docker run --rm \
 
 ## Keycloak Import
 
-copy the tegra.json file to /tmp then run the following to import
+copy the demo.json file to /tmp then run the following to import
 
 ```bash
 docker run --rm \

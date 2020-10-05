@@ -1,8 +1,7 @@
 package com.osanda.work.keycloakDemo.core.keycloak.dto;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
 
 import org.keycloak.json.StringOrArrayDeserializer;
 import org.keycloak.json.StringOrArraySerializer;
@@ -101,7 +100,7 @@ public class UserInfo implements Serializable {
 	@JsonProperty("enabled")
 	protected Boolean enabled;
 
-	protected Map<String, Object> otherClaims = new HashMap<>();
+	private Set<String> clientRoles;
 
 	@JsonIgnore
 	public String[] getAudience() {

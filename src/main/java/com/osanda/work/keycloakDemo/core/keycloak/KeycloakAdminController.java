@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class KeycloakAdminController {
 
 	private final KeycloakAdminService keycloakAdminService;
-	
+
 	// private final LoginService loginService;
 
 	/***
@@ -56,17 +56,24 @@ public class KeycloakAdminController {
 		}
 
 	} // createUser()
-	
-	@PatchMapping("users/{id}")
+
+	@PatchMapping("user/reset-password/{id}")
 	public ResponseEntity<?> resetUserPassword(@PathVariable("id") String id,
 			@RequestParam(name = "newPassword") String newPassword) {
 
 		keycloakAdminService.resetPassword(id, newPassword);
 		return ResponseEntity.ok(ResponseMessage.createMessage("Password reset for user id : " + id));
 	} // getUser()
-	
-	
-	//==================additional keycloak information==========================//
+
+	@GetMapping("user/logout/{id}")
+	public ResponseEntity<?> logoutUserAndEndSession(@PathVariable("id") String id) {
+
+		keycloakAdminService.removeClientSessionFromUserIdAndLogOutUser(id);
+
+		return ResponseEntity.ok(ResponseMessage.createMessage("User Logged Out and All Session ended : " + id));
+	} // getUser()
+
+	// ==================additional keycloak information==========================//
 
 	/***
 	 * get all the users in the keycloak with pagination
@@ -92,10 +99,4 @@ public class KeycloakAdminController {
 		return ResponseEntity.ok(userInfo);
 	} // getUser()
 
-	@GetMapping(value = "user-roles/{id}")
-	public ResponseEntity<?> getUserRoles(@PathVariable("id") String id) {
-
-		return ResponseEntity.ok(this.keycloakAdminService.getAvilableUserRolesFromKeycloak(id));
-	}// getUserRoles()
-	
 }// KeycloakAdminController()

@@ -199,7 +199,13 @@ public class KeycloakAdminService {
 	public UserInfo getUser(String id) {
 		UsersResource userRessource = getKeycloakUserResource();
 		UserRepresentation representation = userRessource.get(id).toRepresentation();
-		return new UserRepresentationDto().toUserInfo(representation);
+
+		Set<String> clientRoles = this.getAvilableUserRolesFromKeycloak(id);
+
+		UserInfo userInfo = new UserRepresentationDto().toUserInfo(representation);
+		userInfo.setClientRoles(clientRoles);
+
+		return userInfo;
 	} // getUser
 
 	/***
@@ -315,7 +321,7 @@ public class KeycloakAdminService {
 	 * @author Osanda Wedamulla
 	 * 
 	 * @param userId
-	 * @return
+	 * @return Set<String>
 	 */
 	public Set<String> getAvilableUserRolesFromKeycloak(String userId) {
 
@@ -330,5 +336,25 @@ public class KeycloakAdminService {
 		return roles;
 
 	}// getAvilableUserRolesFromKeycloak()
+
+	/***
+	 * get avilable roles for a user
+	 * 
+	 * @author Osanda Wedamulla
+	 * 
+	 * @param userId
+	 * @return Set<String>
+	 */
+	public void removeClientSessionFromUserIdAndLogOutUser(String userId) {
+
+		UsersResource userRessource = getKeycloakUserResource();
+
+		try {
+			userRessource.get(userId).logout();
+		} catch (Exception e) {
+			log.error("User logging out error", e);
+		}
+
+	}// removeClientSessionFromUserIdAndLogOutUser()
 
 } // KeycloakAdminService {}

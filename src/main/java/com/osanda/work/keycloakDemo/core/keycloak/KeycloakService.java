@@ -74,14 +74,6 @@ public class KeycloakService {
 
 		Optional<AccessTokenResponse> token = this.exchange(objectMap);
 
-//		if (token.isPresent()) {
-//			UserInfo userInfo = this.getUserInformationFromToken(token.get());
-//		}
-//		// token availability
-//		else {
-//			throw new Exception();
-//		}
-
 		return token;
 	} // getTokenForCredential()
 
