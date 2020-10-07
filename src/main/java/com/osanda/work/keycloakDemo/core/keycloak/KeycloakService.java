@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /***
- * communicate with keycloak server and get token and user releated information
+ * communicate with keycloak server and get token and user related information
  * 
  * @author Osanda Wedamulla
  */

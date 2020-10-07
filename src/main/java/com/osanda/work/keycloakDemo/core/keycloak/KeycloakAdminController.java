@@ -1,7 +1,9 @@
 package com.osanda.work.keycloakDemo.core.keycloak;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.keycloak.representations.AccessTokenResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,19 +33,24 @@ public class KeycloakAdminController {
 	// private final LoginService loginService;
 
 	/***
-	 * create new user in the keycloak and give the response accordingly
 	 * 
 	 * @author Osanda Wedamulla
 	 * 
 	 * @param userDto
 	 * @return ResponseEntity
 	 */
-	@PostMapping("users")
+	@PostMapping("sign-up")
 	public ResponseEntity<?> createUser(@RequestBody UserCreationDto userDto) {
 
 		try {
-			UserInfo userRepresentation = keycloakAdminService.createUser(userDto);
-			return ResponseEntity.ok(userRepresentation);
+			Optional<AccessTokenResponse> tokenForCredential = keycloakAdminService.createUser(userDto);
+
+			if (tokenForCredential.isPresent()) {
+				return ResponseEntity.ok(tokenForCredential.get());
+			}
+			return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+					.body(ResponseMessage.getError("Login is Prohabitetd."));
+
 		} catch (UserAlreadyExistsException e) {
 			return ResponseEntity.status(HttpStatus.CONFLICT).body(ResponseMessage.getError(
 					String.format("%s User Name already exists use a different username : ", userDto.getUserName())));
@@ -76,7 +83,7 @@ public class KeycloakAdminController {
 	// ==================additional keycloak information==========================//
 
 	/***
-	 * get all the users in the keycloak with pagination
+	 * get all the users in the keycloak
 	 * 
 	 * @author Osanda Wedamulla
 	 * 
@@ -93,7 +100,7 @@ public class KeycloakAdminController {
 		return users;
 	} // getUsers()
 
-	@GetMapping("users/{id}")
+	@GetMapping("user/{id}")
 	public ResponseEntity<?> getUser(@PathVariable("id") String id) {
 		UserInfo userInfo = keycloakAdminService.getUser(id);
 		return ResponseEntity.ok(userInfo);

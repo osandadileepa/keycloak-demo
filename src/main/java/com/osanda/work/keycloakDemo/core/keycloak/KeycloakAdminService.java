@@ -14,6 +14,7 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -28,6 +29,7 @@ import com.osanda.work.keycloakDemo.core.keycloak.dto.UserUpdateDto;
 import com.osanda.work.keycloakDemo.core.keycloak.exceptions.UserAlreadyExistsException;
 import com.osanda.work.keycloakDemo.core.keycloak.exceptions.UserCreationFailedException;
 import com.osanda.work.keycloakDemo.core.keycloak.exceptions.UserDeletionFailedException;
+import com.osanda.work.keycloakDemo.core.keycloak.utils.Credential;
 import com.osanda.work.keycloakDemo.core.keycloak.utils.UserRepresentationDto;
 
 import lombok.RequiredArgsConstructor;
@@ -64,6 +66,8 @@ public class KeycloakAdminService {
 
 	@Value("${credentials.keycloak.password}")
 	private String adminPassword;
+
+	private final KeycloakService keycloakService;
 
 	private Keycloak getKeyCloak() {
 		return KeycloakBuilder.builder().serverUrl(authServerUrl).realm("master").username(adminUsername)
@@ -142,7 +146,7 @@ public class KeycloakAdminService {
 	 * @param UserCreationDto userInfo
 	 * @return UserInfo
 	 */
-	public UserInfo createUser(UserCreationDto userInfo) throws Exception {
+	public Optional<AccessTokenResponse> createUser(UserCreationDto userInfo) throws Exception {
 
 		UsersResource userRessource = getKeycloakUserResource();
 
@@ -171,7 +175,20 @@ public class KeycloakAdminService {
 
 			userInfo.setSub(userId);
 
-			return new UserInfo(userInfo);
+			UserInfo info = new UserInfo(userInfo);
+
+			if (info != null && info.getSub() != null) {
+
+				Credential credential = new Credential(userInfo.getUserName(), userInfo.getEmail(),
+						userInfo.getPassword());
+
+				Optional<AccessTokenResponse> tokenResponse = this.keycloakService.getTokenForCredential(credential);
+
+				return tokenResponse;
+
+			} else {
+				throw new UserCreationFailedException();
+			}
 
 		} else if (statusId == 409) {
 			throw new UserAlreadyExistsException();

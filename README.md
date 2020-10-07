@@ -18,6 +18,8 @@ In the project root directory
 
 ## Keycloak Export
 
+- Use the following command to get the Keycloak configs to single json file and it can be located at /tmp
+
 ```bash
 docker run --rm \
  --net=keycloak-demo_demo-network \
@@ -36,7 +38,7 @@ docker run --rm \
 
 ## Keycloak Import
 
-copy the demo.json file to /tmp then run the following to import
+- Copy the demo.json file to /tmp then run the following to import
 
 ```bash
 docker run --rm \
