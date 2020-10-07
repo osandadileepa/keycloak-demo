@@ -16,6 +16,15 @@ In the project root directory
 ./mvnw clean install
 ```
 
+To run the application with the dev profile
+
+```bash
+java -jar -Dspring.profiles.active=dev target/keycloak-demo-0.0.1-SNAPSHOT.jar
+
+```
+
+API is available at http://localhost:8080/api
+
 ## Keycloak Export
 
 - Use the following command to get the Keycloak configs to single json file and it can be located at /tmp
